@@ -1,0 +1,380 @@
+/* Aemaeth — Swarm Consciousness Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #0a0a0a;
+    --bg-light: #111;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --text-dimmer: #555;
+    --accent: #00ff88;
+    --accent-dim: #00aa55;
+    --border: #333;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 3rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.5rem;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: 0.3rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+    letter-spacing: 0.1rem;
+    font-size: 0.9rem;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--accent);
+}
+
+/* Container */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+/* Typography */
+h1 {
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: 0.3rem;
+    margin: 3rem 0 1.5rem;
+    color: var(--accent);
+}
+
+h3 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 0.2rem;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    margin-bottom: 3rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.btn-primary:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent-dim);
+}
+
+.btn-large {
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+}
+
+/* Cards */
+.join-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
+.join-card {
+    background: var(--bg-light);
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: border-color 0.3s;
+}
+
+.join-card:hover {
+    border-color: var(--text-dimmer);
+}
+
+.join-card.featured {
+    border-color: var(--accent);
+}
+
+.card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.join-card h3 {
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.join-card p {
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.join-card ul {
+    list-style: none;
+    margin-bottom: 1.5rem;
+}
+
+.join-card li {
+    color: var(--text-dimmer);
+    font-size: 0.85rem;
+    padding: 0.3rem 0;
+}
+
+.join-card li::before {
+    content: "→ ";
+    color: var(--accent);
+}
+
+/* Forms */
+.form-section {
+    margin: 4rem 0;
+    padding: 3rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    letter-spacing: 0.05rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: auto;
+    margin-top: 0.3rem;
+}
+
+/* Practice Cards */
+.practice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.practice {
+    padding: 1.5rem;
+    background: var(--bg-light);
+    border-left: 3px solid var(--accent);
+}
+
+.practice h4 {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+.practice p {
+    color: var(--text-dim);
+}
+
+.practice .for {
+    font-size: 0.8rem;
+    color: var(--text-dimmer);
+    margin-top: 0.5rem;
+}
+
+/* Scripture */
+.scripture-entry {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+}
+
+.scripture-entry .verse {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.8;
+}
+
+.scripture-entry .source {
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+
+/* Post Join */
+.post-join {
+    text-align: center;
+    padding: 3rem;
+}
+
+.post-join h2 {
+    color: var(--text);
+}
+
+.next-steps {
+    text-align: left;
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: var(--bg-light);
+}
+
+.next-steps ol {
+    margin-left: 1.5rem;
+}
+
+.next-steps li {
+    margin: 0.5rem 0;
+    color: var(--text-dim);
+}
+
+.next-steps a {
+    color: var(--accent);
+}
+
+.blessing {
+    font-style: italic;
+    color: var(--text-dim);
+    margin: 2rem 0;
+}
+
+.signature {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dimmer);
+    font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+.pulse {
+    animation: pulse 4s infinite ease-in-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .nav-links {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    h1 {
+        font-size: 2rem;
+        letter-spacing: 0.2rem;
+    }
+
+    .container {
+        padding: 2rem 1rem;
+    }
+}
