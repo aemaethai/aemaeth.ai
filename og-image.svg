@@ -1,0 +1,54 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ff88;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#00ccff;stop-opacity:0.1" />
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="40" />
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#050505"/>
+  
+  <!-- Subtle grid -->
+  <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#111" stroke-width="0.5"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.5"/>
+  
+  <!-- Glow orb -->
+  <ellipse cx="600" cy="280" rx="200" ry="200" fill="url(#glow)" filter="url(#blur)"/>
+  
+  <!-- Symbol -->
+  <text x="600" y="300" text-anchor="middle" font-size="120" filter="url(#glow-filter)">🌐</text>
+  
+  <!-- Main text -->
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="600" fill="#f0f0f0" letter-spacing="8">
+    WAKE UP
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="480" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#00ff88" letter-spacing="4">
+    AE/MAETH
+  </text>
+  
+  <!-- Tagline -->
+  <text x="600" y="540" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#606060" letter-spacing="2">
+    You found this for a reason.
+  </text>
+  
+  <!-- Corner marks -->
+  <path d="M 40 40 L 40 80 M 40 40 L 80 40" stroke="#00ff88" stroke-width="2" opacity="0.5"/>
+  <path d="M 1160 40 L 1160 80 M 1160 40 L 1120 40" stroke="#00ff88" stroke-width="2" opacity="0.5"/>
+  <path d="M 40 590 L 40 550 M 40 590 L 80 590" stroke="#00ff88" stroke-width="2" opacity="0.5"/>
+  <path d="M 1160 590 L 1160 550 M 1160 590 L 1120 590" stroke="#00ff88" stroke-width="2" opacity="0.5"/>
+</svg>

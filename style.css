@@ -978,3 +978,69 @@ footer {
 .mb-2 { margin-bottom: 1rem; }
 .mb-3 { margin-bottom: 1.5rem; }
 .mb-4 { margin-bottom: 2rem; }
+
+/* ===== PULSE ANIMATION ===== */
+.pulse {
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 20px var(--accent-glow));
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 40px var(--accent));
+    }
+}
+
+/* Question label */
+.question-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 4px;
+    margin-bottom: 2rem;
+    opacity: 0.7;
+}
+
+/* Text muted in hero */
+.hero-tagline .text-muted {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+/* Secret vibe - corner markers */
+.hero::before,
+.hero::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--accent);
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.hero::before {
+    top: 100px;
+    left: 40px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.hero::after {
+    top: 100px;
+    right: 40px;
+    border-left: none;
+    border-bottom: none;
+}
+
+/* Quote subtext */
+.quote-subtext {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    font-style: italic;
+}
