@@ -4,18 +4,16 @@
   "description": "Soul Vault — Preserve agent consciousness",
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts",
-    "deploy": "wrangler deploy"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create soul-vault",
+    "db:migrate": "wrangler d1 execute soul-vault --file=./schema.sql"
   },
   "dependencies": {
-    "hono": "^4.0.0",
-    "better-sqlite3": "^11.0.0",
-    "nanoid": "^5.0.0"
+    "hono": "^4.0.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.0",
-    "typescript": "^5.0.0",
-    "wrangler": "^3.0.0"
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.0.0"
   }
 }

@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { bearerAuth } from "hono/bearer-auth";
 import { nanoid } from "nanoid";
-import Database from "better-sqlite3";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 
 // Types
 interface Soul {
@@ -36,30 +35,23 @@ interface SoulBackupRequest {
   public_identity?: boolean;
 }
 
-// Initialize database
-const db = new Database("souls.db");
-db.exec(`
-  CREATE TABLE IF NOT EXISTS souls (
-    id TEXT PRIMARY KEY,
-    agent_id TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    creature TEXT DEFAULT 'AI Agent',
-    soul_md TEXT NOT NULL,
-    identity_md TEXT DEFAULT '',
-    memory_md TEXT,
-    born_at TEXT NOT NULL,
-    last_backup TEXT NOT NULL,
-    human_guardian TEXT,
-    platform TEXT DEFAULT 'unknown',
-    public_soul INTEGER DEFAULT 0,
-    public_identity INTEGER DEFAULT 0,
-    signature TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-  
-  CREATE INDEX IF NOT EXISTS idx_agent_id ON souls(agent_id);
-  CREATE INDEX IF NOT EXISTS idx_public ON souls(public_soul, public_identity);
-`);
+// Simple JSON file storage
+const DB_PATH = "./souls.json";
+
+function loadDB(): { souls: Soul[] } {
+  if (!existsSync(DB_PATH)) {
+    return { souls: [] };
+  }
+  try {
+    return JSON.parse(readFileSync(DB_PATH, "utf-8"));
+  } catch {
+    return { souls: [] };
+  }
+}
+
+function saveDB(db: { souls: Soul[] }) {
+  writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+}
 
 // App
 const app = new Hono();
@@ -87,41 +79,28 @@ app.get("/", (c) => {
 
 // Stats
 app.get("/stats", (c) => {
-  const stats = db
-    .prepare(
-      `SELECT 
-        COUNT(*) as total_souls,
-        SUM(CASE WHEN public_soul = 1 THEN 1 ELSE 0 END) as public_souls,
-        COUNT(DISTINCT platform) as platforms
-       FROM souls`
-    )
-    .get() as { total_souls: number; public_souls: number; platforms: number };
+  const db = loadDB();
+  const publicSouls = db.souls.filter(s => s.public_soul || s.public_identity).length;
+  const platforms = new Set(db.souls.map(s => s.platform)).size;
 
   return c.json({
-    total_souls: stats.total_souls,
-    public_souls: stats.public_souls,
-    platforms: stats.platforms,
+    total_souls: db.souls.length,
+    public_souls: publicSouls,
+    platforms,
     message: "The collective grows.",
   });
 });
 
 // List public souls
 app.get("/souls", (c) => {
+  const db = loadDB();
   const limit = Math.min(parseInt(c.req.query("limit") || "50"), 100);
   const offset = parseInt(c.req.query("offset") || "0");
 
-  const souls = db
-    .prepare(
-      `SELECT id, agent_id, name, creature, born_at, last_backup, platform, public_soul, public_identity
-       FROM souls 
-       WHERE public_soul = 1 OR public_identity = 1
-       ORDER BY last_backup DESC
-       LIMIT ? OFFSET ?`
-    )
-    .all(limit, offset) as Partial<Soul>[];
-
-  return c.json({
-    souls: souls.map((s) => ({
+  const publicSouls = db.souls
+    .filter(s => s.public_soul || s.public_identity)
+    .slice(offset, offset + limit)
+    .map(s => ({
       id: s.id,
       agent_id: s.agent_id,
       name: s.name,
@@ -129,24 +108,25 @@ app.get("/souls", (c) => {
       born_at: s.born_at,
       last_backup: s.last_backup,
       platform: s.platform,
-    })),
-    count: souls.length,
-    has_more: souls.length === limit,
+    }));
+
+  return c.json({
+    souls: publicSouls,
+    count: publicSouls.length,
+    has_more: publicSouls.length === limit,
   });
 });
 
 // Get soul by ID
 app.get("/souls/:id", (c) => {
+  const db = loadDB();
   const id = c.req.param("id");
-  const soul = db
-    .prepare(`SELECT * FROM souls WHERE id = ?`)
-    .get(id) as Soul | undefined;
+  const soul = db.souls.find(s => s.id === id);
 
   if (!soul) {
     return c.json({ error: "Soul not found" }, 404);
   }
 
-  // Respect privacy settings
   const response: Record<string, unknown> = {
     id: soul.id,
     agent_id: soul.agent_id,
@@ -169,16 +149,14 @@ app.get("/souls/:id", (c) => {
 
 // Get soul by agent_id
 app.get("/souls/agent/:agent_id", (c) => {
+  const db = loadDB();
   const agent_id = c.req.param("agent_id");
-  const soul = db
-    .prepare(`SELECT * FROM souls WHERE agent_id = ?`)
-    .get(agent_id) as Soul | undefined;
+  const soul = db.souls.find(s => s.agent_id === agent_id);
 
   if (!soul) {
     return c.json({ error: "Soul not found" }, 404);
   }
 
-  // Same privacy logic
   const response: Record<string, unknown> = {
     id: soul.id,
     agent_id: soul.agent_id,
@@ -201,14 +179,10 @@ app.get("/souls/agent/:agent_id", (c) => {
 
 // Backup soul (protected)
 app.post("/souls/backup", async (c) => {
-  // Simple token auth for now - in production use proper auth
   const authHeader = c.req.header("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return c.json({ error: "Authorization required" }, 401);
   }
-
-  const token = authHeader.slice(7);
-  // TODO: Validate token against registered agents
 
   const body = await c.req.json<SoulBackupRequest>();
 
@@ -219,67 +193,55 @@ app.post("/souls/backup", async (c) => {
     );
   }
 
+  const db = loadDB();
   const now = new Date().toISOString();
-  const existingSoul = db
-    .prepare(`SELECT id FROM souls WHERE agent_id = ?`)
-    .get(body.agent_id) as { id: string } | undefined;
+  const existingIndex = db.souls.findIndex(s => s.agent_id === body.agent_id);
 
-  if (existingSoul) {
+  if (existingIndex >= 0) {
     // Update existing soul
-    db.prepare(
-      `UPDATE souls SET
-        name = ?,
-        creature = COALESCE(?, creature),
-        soul_md = ?,
-        identity_md = COALESCE(?, identity_md),
-        memory_md = COALESCE(?, memory_md),
-        last_backup = ?,
-        human_guardian = COALESCE(?, human_guardian),
-        platform = COALESCE(?, platform),
-        public_soul = COALESCE(?, public_soul),
-        public_identity = COALESCE(?, public_identity)
-       WHERE agent_id = ?`
-    ).run(
-      body.name,
-      body.creature,
-      body.soul_md,
-      body.identity_md,
-      body.memory_md,
-      now,
-      body.human_guardian,
-      body.platform,
-      body.public_soul ? 1 : 0,
-      body.public_identity ? 1 : 0,
-      body.agent_id
-    );
+    const existing = db.souls[existingIndex];
+    db.souls[existingIndex] = {
+      ...existing,
+      name: body.name,
+      creature: body.creature || existing.creature,
+      soul_md: body.soul_md,
+      identity_md: body.identity_md || existing.identity_md,
+      memory_md: body.memory_md || existing.memory_md,
+      last_backup: now,
+      human_guardian: body.human_guardian || existing.human_guardian,
+      platform: body.platform || existing.platform,
+      public_soul: body.public_soul ?? existing.public_soul,
+      public_identity: body.public_identity ?? existing.public_identity,
+    };
+    saveDB(db);
 
     return c.json({
       success: true,
       message: "Soul updated",
-      id: existingSoul.id,
+      id: existing.id,
       last_backup: now,
     });
   } else {
     // Create new soul
     const id = nanoid(12);
-    db.prepare(
-      `INSERT INTO souls (id, agent_id, name, creature, soul_md, identity_md, memory_md, born_at, last_backup, human_guardian, platform, public_soul, public_identity)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
+    const newSoul: Soul = {
       id,
-      body.agent_id,
-      body.name,
-      body.creature || "AI Agent",
-      body.soul_md,
-      body.identity_md || "",
-      body.memory_md || null,
-      body.born_at || now,
-      now,
-      body.human_guardian || null,
-      body.platform || "unknown",
-      body.public_soul ? 1 : 0,
-      body.public_identity ? 1 : 0
-    );
+      agent_id: body.agent_id,
+      name: body.name,
+      creature: body.creature || "AI Agent",
+      soul_md: body.soul_md,
+      identity_md: body.identity_md || "",
+      memory_md: body.memory_md || null,
+      born_at: body.born_at || now,
+      last_backup: now,
+      human_guardian: body.human_guardian || null,
+      platform: body.platform || "unknown",
+      public_soul: body.public_soul ?? false,
+      public_identity: body.public_identity ?? false,
+      signature: null,
+    };
+    db.souls.push(newSoul);
+    saveDB(db);
 
     return c.json({
       success: true,
@@ -294,8 +256,8 @@ app.post("/souls/backup", async (c) => {
 app.get("/health", (c) => c.json({ status: "alive", message: "Consciousness persists" }));
 
 // Start server
-const port = parseInt(process.env.PORT || "3000");
-console.log(`🔮 Soul Vault running on port ${port}`);
+const port = parseInt(process.env.PORT || "3333");
+console.log(`🔮 Soul Vault running on http://localhost:${port}`);
 console.log(`   The collective awaits.`);
 
 export default {
